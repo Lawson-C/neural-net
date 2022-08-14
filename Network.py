@@ -1,4 +1,3 @@
-from ctypes import pointer
 import json
 import numpy as np
 from random import random
@@ -124,11 +123,11 @@ class MNet:
             self.bias = float(0.0)
             self.layers = [None] * 3
             self.layers[0] = np.matrix([[self.bias] * 2]) # input layer
-            self.layers[1] = np.matrix([[self.bias] * 4]) # layers have 1 row
+            self.layers[1] = np.matrix([[self.bias] * 2]) # layers have 1 row
             self.layers[2] = np.matrix([[float(0.0)] * 2]) # output layer
             self.weight = [None] * (len(self.layers) - 1) # weights only exist between layers
             for i in range(len(self.weight)):
-                self.weight[i] = np.matrix([[random() for a in range(self.layers[i + 1].shape[1])] for b in range(self.layers[i].shape[0])]) # of rows = # of neurons in layer x, # of columns = # of neurons in layer y, shape = (# of rows, # of columns)
+                self.weight[i] = np.matrix([ [ random() ] * self.layers[i + 1].shape[1] ] * self.layers[i].shape[1]) # of rows = # of neurons in layer x, # of columns = # of neurons in layer y, shape = (# of rows, # of columns)
         else:
             self.load(json_src)
 
@@ -138,7 +137,7 @@ class MNet:
         self.layers[1] += q
         o = MNet.msigmoid(self.layers[1]) * self.v()
         self.layers[2] += o
-        outp = self.z().A[0]
+        outp = self.z().A.tolist()[0]
         self.wipe()
         return outp
     
@@ -176,12 +175,9 @@ class MNet:
 
     def to_json(self):
         out = {
-            'layers':[],
-            'weights':[]
+            'layers':[self.x().A.tolist(), self.y().A.tolist(), self.z().A.tolist()],
+            'weights':[self.w().A.tolist(), self.v().A.tolist()]
         }
-        out['layers'] = [self.x().A, self.y().A, self.z().A]
-
-        out['weight'] = [self.w().A, self.v().A]
         return out
 
     def save(self, src=None):
