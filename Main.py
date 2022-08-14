@@ -1,14 +1,35 @@
 from random import random
-from Network import Net
+from Network import Net, MNet
+from time import sleep
 
-grid = [[round(random()) - 1 for i in range(3)] for j in range(3)]
-column1 = [grid[int(i / 3)][i % 3] for i in range(len(grid) * len(grid[0]))]
+def pattern(inp):
+    if isinstance(inp, float):
+        return round(inp)
+    elif isinstance(inp, list):
+        return [round(inp[i]) for i in range(len(inp))]
 
-net = Net(9)
+def normal_net():
+    net = Net(json_src='current_net.json')
+    for j in range(10):
+        sleep(.5)
+        inp = random()
+        outp = net.interpret([inp])[0]
+        net.accomodate(inp, pattern(inp))
+        print(f'input: {inp}\toutput: {outp}\texpected: {pattern(inp)}')
+        print(f'performance: {-.5*(outp - pattern(inp))**2}')
+    net.save()
 
-z = net.interpret(column1)
+def matrix_net():
+    net = MNet()
+    for i in range(100):
+        inp = [random() for k in range(len(net.x().A[0]))]
+        for j in range(50):
+            net.interpret(inp)
+        outp = net.interpret(inp)
+        performance = net.accomodate(inp, pattern(inp))
+        print(f'input: {inp}\toutput: {outp}\texpected: {pattern(inp)}')
+        print(f'performance: {performance}')
+    net.save()
 
-s = ''
-for v in z:
-    s += str(v.val) + ', '
-print(s)
+if __name__ == "__main__":
+    matrix_net()
