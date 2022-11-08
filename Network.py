@@ -122,7 +122,7 @@ class MNet:
         if json_src is None:
             self.bias = float(0.0)
             self.layers = [None] * 3
-            self.layers[0] = np.matrix([[self.bias] * 2]) # input layer
+            self.layers[0] = np.matrix([[float(0.0)] * 2]) # input layer
             self.layers[1] = np.matrix([[self.bias] * 2]) # layers have 1 row
             self.layers[2] = np.matrix([[float(0.0)] * 2]) # output layer
             self.weight = [None] * (len(self.layers) - 1) # weights only exist between layers
@@ -133,10 +133,10 @@ class MNet:
 
     def interpret(self, inp):
         self.layers[0] += np.matrix([inp])
-        q = MNet.msigmoid(self.layers[0]) * self.w()
-        self.layers[1] += q
-        o = MNet.msigmoid(self.layers[1]) * self.v()
-        self.layers[2] += o
+        p = MNet.msigmoid(self.x() * self.w())
+        self.layers[1] += p
+        q = MNet.msigmoid(self.y() * self.v())
+        self.layers[2] += q
         outp = self.z().A.tolist()[0]
         self.wipe()
         return outp
@@ -144,11 +144,11 @@ class MNet:
     def accomodate(self, inp, expected):
         outp = self.interpret(inp)
         performance = [ None ] * len(outp)
-        dpdv = np.matrix([ [ (expected[b] - outp[b]) * MNet.sigmoid(self.y(a)) for b in range(self.z().shape[1]) ] for a in range(self.y().shape[1]) ])
+        dpdv = np.matrix([ [ (expected[i] - outp[i]) * self.z(i) * (1 - self.z(i)) * self.y(j) for i in range(self.z().shape[1]) ] for j in range(self.y().shape[1]) ])
         for i in range(len(outp)):
             performance[i] = -.5*(outp[i] - expected[i])**2
-            dpdw = np.matrix([ [ (expected[i] - outp[i]) * self.v(b, i) * MNet.sigmoid(self.y(b)) * (1 - MNet.sigmoid(self.y(b))) * MNet.sigmoid(self.x(a)) for b in range(self.y().shape[1]) ] for a in range(self.x().shape[1]) ])
-            learning_rate = .05
+            dpdw = np.matrix([ [ (expected[i] - outp[i]) * self.z(i) * (1 - self.z(i)) * self.v(j, i) * self.y(j) * (1 - self.y(j)) * self.x(k) for j in range(self.y().shape[1]) ] for k in range(self.x().shape[1]) ])
+            learning_rate = .5
             self.weight[0] += dpdw * learning_rate
         self.weight[1] += dpdv * learning_rate
         return performance
@@ -156,20 +156,20 @@ class MNet:
     def x(self, i=None):
         return self.layers[0].item((0, i)) if i is not None else self.layers[0]
     
-    def w(self, x=None, y=None):
-        return self.weight[0].item((x, y)) if x is not None and y is not None else self.weight[0]
+    def w(self, a=None, b=None):
+        return self.weight[0].item((a, b)) if a is not None and b is not None else self.weight[0]
 
     def y(self, i=None):
         return self.layers[1].item((0, i)) if i is not None else self.layers[1]
     
-    def v(self, x=None, y=None):
-        return self.weight[1].item((x, y)) if x is not None and y is not None else self.weight[1]
+    def v(self, a=None, b=None):
+        return self.weight[1].item((a, b)) if a is not None and b is not None else self.weight[1]
     
     def z(self, i=None):
-        return self.layers[2].item(0, i) if i is not None else self.layers[2]
+        return self.layers[2].item((0, i)) if i is not None else self.layers[2]
 
     def wipe(self):
-        self.layers[0] = np.matrix([[-self.bias] * 2])
+        self.layers[0] = np.matrix([[float(0)] * 2])
         self.layers[1] = np.matrix([[-self.bias] * 2])
         self.layers[2] = np.matrix([[float(0)] * 2])
 
