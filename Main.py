@@ -1,5 +1,6 @@
 from random import random
-from Network import Net, MNet
+from Network import Net
+from MatrixNetwork import MNet
 from time import sleep
 
 def pattern(inp):
