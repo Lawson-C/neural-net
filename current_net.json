@@ -1,1 +1,1 @@
-[[{"x": 0, "y": 0, "threshold": 0.5, "val": -0.5, "connections": {"1,0": -12.355257637281458}}], [{"x": 1, "y": 0, "threshold": 0.5, "val": -0.5, "connections": {"2,0": -6.1619782062620585}}], [{"x": 2, "y": 0, "threshold": 0, "val": 0.04684549706407792, "connections": {}}]]
+[[{"x": 0, "y": 0, "threshold": 0.5, "val": -0.5, "connections": {"1,0": 0.4879180193657968}}], [{"x": 1, "y": 0, "threshold": 0.5, "val": -0.5, "connections": {"2,0": 0.5650496929271591}}], [{"x": 2, "y": 0, "threshold": 0, "val": 0, "connections": {}}]]

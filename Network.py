@@ -120,14 +120,13 @@ class Net:
 class MNet:
     def __init__(self, json_src=None):
         if json_src is None:
-            self.bias = float(0.0)
+            self.bias = -float(1.0)
             self.layers = [None] * 3
             self.layers[0] = np.matrix([[float(0.0)] * 2]) # input layer
-            self.layers[1] = np.matrix([[self.bias] * 2]) # layers have 1 row
+            self.layers[1] = np.matrix([[-self.bias] * 2]) # layers have 1 row
             self.layers[2] = np.matrix([[float(0.0)] * 2]) # output layer
             self.weight = [None] * (len(self.layers) - 1) # weights only exist between layers
-            for i in range(len(self.weight)):
-                self.weight[i] = np.matrix([ [ random() ] * self.layers[i + 1].shape[1] ] * self.layers[i].shape[1]) # of rows = # of neurons in layer x, # of columns = # of neurons in layer y, shape = (# of rows, # of columns)
+            self.weight = [ np.matrix([ [ random() for a in range(self.layers[i + 1].shape[1]) ] ] for b in range(self.layers[i].shape[1])) for i in range(len(self.weight)) ] # of rows = # of neurons in layer x, # of columns = # of neurons in layer y, shape = (# of rows, # of columns)
         else:
             self.load(json_src)
 
@@ -144,12 +143,13 @@ class MNet:
     def accomodate(self, inp, expected):
         outp = self.interpret(inp)
         performance = [ None ] * len(outp)
-        dpdv = np.matrix([ [ (expected[i] - outp[i]) * self.z(i) * (1 - self.z(i)) * self.y(j) for i in range(self.z().shape[1]) ] for j in range(self.y().shape[1]) ])
+        dpdq = [ (expected[i] - outp[i]) * self.z(i) * (1 - self.z(i)) for i in range(self.z().shape[1]) ];
+        dpdv = np.matrix([ [ dpdq[i] * self.y(j) for i in range(self.z().shape[1]) ] for j in range(self.y().shape[1]) ])
         for i in range(len(outp)):
             performance[i] = -.5*(outp[i] - expected[i])**2
-            dpdw = np.matrix([ [ (expected[i] - outp[i]) * self.z(i) * (1 - self.z(i)) * self.v(j, i) * self.y(j) * (1 - self.y(j)) * self.x(k) for j in range(self.y().shape[1]) ] for k in range(self.x().shape[1]) ])
-            learning_rate = .5
-            self.weight[0] += dpdw * learning_rate
+            dpdw = np.matrix([ [ dpdq[i] * (1 - self.z(i)) * self.v(j, i) * self.y(j) * (1 - self.y(j)) * self.x(k) for j in range(self.y().shape[1]) ] for k in range(self.x().shape[1]) ])
+            learning_rate = 1
+            #self.weight[0] += dpdw * learning_rate
         self.weight[1] += dpdv * learning_rate
         return performance
 
@@ -168,6 +168,10 @@ class MNet:
     def z(self, i=None):
         return self.layers[2].item((0, i)) if i is not None else self.layers[2]
 
+    def reset(self):
+        self.wipe()
+        self.weight = [ np.matrix([ [ random() for a in range(self.layers[i + 1].shape[1]) ] ] for b in range(self.layers[i].shape[1])) for i in range(len(self.weight)) ]
+
     def wipe(self):
         self.layers[0] = np.matrix([[float(0)] * 2])
         self.layers[1] = np.matrix([[-self.bias] * 2])
@@ -176,7 +180,8 @@ class MNet:
     def to_json(self):
         out = {
             'layers':[self.x().A.tolist(), self.y().A.tolist(), self.z().A.tolist()],
-            'weights':[self.w().A.tolist(), self.v().A.tolist()]
+            'weights':[self.w().A.tolist(), self.v().A.tolist()],
+            'bias':self.bias
         }
         return out
 
@@ -188,10 +193,13 @@ class MNet:
     def load(self, src):
         with open(src, 'r') as file:
             data = json.load(file)
+        self.layers = [ None ] * len(data['layers'])
         for i in range(len(data['layers'])):
             self.layers[i] = np.matrix(data['layers'][i])
-        for i in range(len(data['weight'])):
-            self.weight[i] = np.matrix(data['weight'][i])
+        self.weight = [ None ] * len(data['weights'])
+        for i in range(len(data['weights'])):
+            self.weight[i] = np.matrix(data['weights'][i])
+        self.bias = data['bias']
         file.close()
 
     # runs callback function for each value in matrix 'm'

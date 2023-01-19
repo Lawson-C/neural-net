@@ -6,7 +6,7 @@ def pattern(inp):
     if isinstance(inp, float):
         return round(inp)
     elif isinstance(inp, list):
-        return [round(inp[i]) for i in range(len(inp))]
+        return [round(i) for i in inp]
 
 def normal_net():
     net = Net(json_src='current_net.json')
@@ -20,7 +20,7 @@ def normal_net():
     net.save()
 
 def matrix_net():
-    net = MNet()
+    net = MNet(json_src="matrix_net.json")
     for i in range(100):
         inp = [random() for k in range(len(net.x().A[0]))]
         for j in range(50):
