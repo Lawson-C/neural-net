@@ -1,36 +1,29 @@
+from math import sqrt
 from random import random
 from Network import Net
 from MatrixNetwork import MNet
 from time import sleep
 
-def pattern(inp):
-    if isinstance(inp, float):
-        return round(inp)
-    elif isinstance(inp, list):
-        return [round(i) for i in inp]
+def avg(inp):
+    return [ int(inp[0] >= .5), int(inp[1] >= .5) ]
 
-def normal_net():
-    net = Net(json_src='current_net.json')
-    for j in range(10):
-        sleep(.5)
-        inp = random()
-        outp = net.interpret([inp])[0]
-        net.accomodate(inp, pattern(inp))
-        print(f'input: {inp}\toutput: {outp}\texpected: {pattern(inp)}')
-        print(f'performance: {-.5*(outp - pattern(inp))**2}')
-    net.save()
-
-def matrix_net():
-    net = MNet(json_src="matrix_net.json")
-    for i in range(100):
-        inp = [random() for k in range(len(net.x().A[0]))]
+def run_net(net, pattern):
+    performances = []
+    for i in range(20):
         for j in range(50):
-            net.interpret(inp)
-        outp = net.interpret(inp)
-        performance = net.accomodate(inp, pattern(inp))
-        print(f'input: {inp}\toutput: {outp}\texpected: {pattern(inp)}')
-        print(f'performance: {performance}')
+            inp = [ random() for k in range(net.x().shape[1]) ]
+            outp = net.interpret(inp, pattern(inp))
+            performance = outp[1][0]
+            performances.append(performance)
+        # only print every 50
+        print(f'input: {inp}\toutput: {outp[0]}\texpected: {pattern(inp)}')
+        print(f'performance: {performance}\t\tdiff: {outp[1][1]}')
     net.save()
+    return performances
+
+def run_mnet():
+    net = MNet(json_src="matrix_net.json")
+    return run_net(net, pattern=avg)
 
 if __name__ == "__main__":
-    matrix_net()
+    run_mnet()

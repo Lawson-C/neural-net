@@ -1,5 +1,4 @@
-from Network import MNet
+from MatrixNetwork import MNet
 
-net = MNet(json_src='matrix_net.json')
-net.reset()
+net = MNet()
 net.save()

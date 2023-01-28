@@ -23,40 +23,40 @@ class Net:
             self.col = []
             self.load(json_src)
 
-    def input_layer(self):
+    def x(self):
         return self.col[0]
 
-    def output_layer(self):
-        return self.col[len(self.col) - 1]
+    def y(self):
+        return self.col[1]
+
+    def z(self):
+        return self.col[2]
 
     # running the net
     def interpret(self, input):
-        for neuron in self.output_layer():
+        for neuron in self.z():
             neuron.clear()
-        for i in range(len(self.input_layer())):
-            self.input_layer()[i].receive(input[i])
+        for i in range(len(self.x())):
+            self.x()[i].receive(input[i])
         for column in self.col:
-            if column == self.output_layer():
+            if column == self.z():
                 break
             for neuron in column:
                 neuron.fire()
-        return [neuron.val + neuron.threshold for neuron in self.output_layer()]
+        return [neuron.val + neuron.threshold for neuron in self.z()]
 
     # adapting the net
     def accomodate(self, input, expected):
         output = self.interpret([input])[0]
-        x = self.col[0][0]
-        y = self.col[1][0]
-        z = self.col[2][0]
         diff = output - expected
         performance = -.5 * diff * diff
         learning_rate = 10
 
         try:
-            dPdw2 = -diff * (output * (1 - output)) * y.val
-            dPdw1 = dPdw2 * y.connections[z] * (1 - y.val) * x.val
-            x.connections[y] -= learning_rate * dPdw1
-            y.connections[z] -= learning_rate * dPdw2
+            dPdw2 = -diff * (output * (1 - output)) * self.y().val
+            dPdw1 = dPdw2 * self.y().connections[self.z()] * (1 - self.y().val) * self.x().val
+            self.x().connections[self.y()] -= learning_rate * dPdw1
+            self.y().connections[self.z()] -= learning_rate * dPdw2
             return [dPdw1, dPdw2]
         except (ZeroDivisionError):
             do = 'nothing'
@@ -81,7 +81,7 @@ class Net:
         self.col = [[Perceptron(x=x, y=y) for y in range(
             len(data[x]))] for x in range(len(data) - 1)]
         self.col.append([Output(x=len(data) - 1, y=y)
-                        for y in range(len(self.output_layer()))])
+                        for y in range(len(self.z()))])
         for x in range(len(data)):
             self.col[x] = [None] * len(data[x])
             for y in range(len(data[x])):
@@ -112,6 +112,6 @@ class Net:
                     maxlen = len(column)
                 if i >= len(column):
                     break
-                s += f'({column[i].x}, {column[i].y}): {column[i].val}' + ('\n' if column == self.output_layer() else '\t')
+                s += f'({column[i].x}, {column[i].y}): {column[i].val}' + ('\n' if column == self.z() else '\t')
             i += 1
         return s
