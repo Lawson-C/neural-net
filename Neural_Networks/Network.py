@@ -1,6 +1,6 @@
 import json
 from random import random
-from Neuron import Output, Perceptron
+from .Neuron import Output, Perceptron
 
 
 class Net:

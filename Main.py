@@ -1,7 +1,5 @@
-from math import sqrt
 from random import random
-from Network import Net
-from MatrixNetwork import MNet
+from Neural_Networks import MNet
 from time import sleep
 
 def avg(inp):
@@ -22,7 +20,7 @@ def run_net(net, pattern):
     return performances
 
 def run_mnet():
-    net = MNet(json_src="matrix_net.json")
+    net = MNet(json_src="Neural_Networks\\matrix_net.json")
     return run_net(net, pattern=avg)
 
 if __name__ == "__main__":
