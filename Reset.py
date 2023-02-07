@@ -1,4 +1,4 @@
-from Neural_Networks import MNet
+from Neural_Networks import ExpandableNet
 
-net = MNet()
+net = ExpandableNet()
 net.save()
