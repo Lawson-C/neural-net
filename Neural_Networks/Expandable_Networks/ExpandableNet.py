@@ -5,20 +5,20 @@ from random import random
 class ExpandableNet:
     def __init__(self, json_src=None):
         if json_src is None:
-            self.depth = 5
+            self.depth = 9
             self.bias = float(1.0)
             self.layers = [ None ] * self.depth
-            self.layers[0] = np.matrix([ [ float(0.0) ] * 2])
+            self.layers[0] = np.matrix([ [ float(0.0) ] * 3 ])
             for i in range(1, self.depth - 1):
-                self.layers[i] = np.matrix([ [ -self.bias ] * ExpandableNet.column_height(i, self.depth) ])
-            self.layers[self.depth - 1] = np.matrix([ [ -self.bias ] * 2 ])
+                self.layers[i] = np.matrix([ [ -self.bias ] * ExpandableNet.column_height(i, self.depth, self.c(0).shape[1]) ])
+            self.layers[self.depth - 1] = np.matrix([ [ -self.bias ] * 3 ])
             self.weight = [ None ] * (self.depth - 1)
             self.weight = [ np.matrix( [ [ random() for a in range(self.layers[i + 1].shape[1]) ] for b in range(self.layers[i].shape[1]) ] ) for i in range(self.depth - 1) ]
         else:
             self.load(json_src)
 
-    def column_height(i, leng):
-        return int(10 * (1 - (i - leng/2)**2 / (5 * leng)))
+    def column_height(i, leng, b):
+        return int((leng/8)*(b+4) - 1/4 * (i - leng/2 + .5)**2)
 
     def c(self, i, j=None):
         return self.layers[i] if j is None else self.layers[i].item(0, j)

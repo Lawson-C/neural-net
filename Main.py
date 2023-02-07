@@ -14,7 +14,7 @@ def run_net(net, pattern):
             performances.append(performance)
         # only print every 50
         print(f'input: {inp}\toutput: {outp[0]}\texpected: {pattern(inp)}')
-        print(f'performance: {performance}\t\tdiff: {outp[1][1]}')
+        print(f'performance: {performance}')
     net.save()
     return performances
 
@@ -23,7 +23,7 @@ def run_mnet():
     return run_net(net, pattern=avg)
 
 def run_enet():
-    net = ExpandableNet()
+    net = ExpandableNet(json_src="Neural_Networks\\matrix_net.json")
     return run_net(net, pattern=avg)
 
 if __name__ == "__main__":
